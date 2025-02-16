@@ -44,33 +44,26 @@ contract ERC20 {
         require(balanceOf[_from] >= _value, "INSUFFICIENT_BALANCE");
         require(allowance[_from][msg.sender] >= _value, "INSUFFICIENT_ALLOWANCE");
         
+        allowance[_from][msg.sender] -= _value;
         balanceOf[_from] -= _value;
         balanceOf[_to] += _value;
-        allowance[_from][msg.sender] -= _value;
         
         return true;
     }
 
     function approve(address _spender, uint256 _value) public returns (bool success) {
         require(!paused, "PAUSED");
-        allowance[msg.sender][_spender] = _value;
+        allowance[msg.sender][_spender] += _value;
         return true;
     }
 
     function pause() public {
-        // 오직 owner만 호출 가능하게
         require(msg.sender == owner, "NOT_OWNER");
         paused = true;
     }
 
-    // 편의상 unpause도 추가
-    function unpause() public {
-        require(msg.sender == owner, "NOT_OWNER");
-        paused = false;
-    }
-
-    // EIP-712 Typed Data Hash (간단 버전)
-    // 실제 사용 시 DOMAIN_SEPARATOR 등을 함께 써야 합니다.
+    // EIP-712 Typed Data Hash
+    // 여기서 도메인 구분자는 제외했음
     function _toTypedDataHash(bytes32 structHash) public pure returns (bytes32) {
         return keccak256(abi.encodePacked("\x19\x01", structHash));
     }
@@ -112,7 +105,12 @@ contract ERC20 {
         // nonce 사용 후 1 증가
         nonces[owner_] = currentNonce + 1;
 
-        // allowance 설정
+        // approve
+        _approve(owner_, spender, value);
+    }
+
+    function _approve(address owner_, address spender, uint256 value) internal {
         allowance[owner_][spender] = value;
     }
+
 }

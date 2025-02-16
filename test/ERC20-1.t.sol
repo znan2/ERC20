@@ -15,9 +15,10 @@ contract UpsideTokenTest is Test {
         upside_token = new ERC20("UPSIDE", "UPS");
         upside_token.transfer(alice, 50 ether);
         upside_token.transfer(bob, 50 ether);
+        upside_token.transfer(msg.sender, 50 ether);
     }
     
-    function test_Revert_PauseNotOwner() public {
+    function testFailPauseNotOwner() public {
         vm.prank(alice);
         upside_token.pause();
     }
